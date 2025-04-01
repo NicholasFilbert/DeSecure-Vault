@@ -1,6 +1,7 @@
 {
   "name": "desecure-vault-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -11,8 +12,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@reown/appkit-siwe": "^1.7.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
     "express": "^4.21.2",
-    "nodemon": "^3.1.9"
+    "express-session": "^1.18.1",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.9",
+    "siwe": "^3.0.0",
+    "viem": "^2.24.3"
   }
 }

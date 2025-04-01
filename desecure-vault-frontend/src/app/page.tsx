@@ -1,4 +1,4 @@
-import ConnectWallet from "@/components/auth/ConnectWallet";
+import ConnectButton from "@/components/auth/ConnectButton";
 import Image from "next/image";
 
 export default function Home() {
@@ -19,18 +19,23 @@ export default function Home() {
         </div>
 
         <div>
-          <ConnectWallet />
+          <ConnectButton />
         </div>
       </div>
 
       {/* Content */}
       <div className="w-full text-center">
-      <div className="text-center text-4xl font-bold">
-        <span className="font-bold">Your data, your power.</span>
-        <br className="mb-2"/>
-        <span className="text-purple-400">Stored securely onchain — forever.</span>
+        <div className="text-center text-4xl font-bold mb-8">
+          <span className="font-bold">Your data, your power.</span>
+          <br className="mb-2" />
+          <span className="text-purple-400">Stored securely onchain — forever.</span>
+        </div>
+
+        <div className="flex justify-center text-primary">
+          <ConnectButton label="Connect your wallet to unlock exclusive features!" />
+        </div>
       </div>
-      </div>
+
     </div>
   )
 }
