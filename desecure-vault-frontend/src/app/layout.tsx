@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "@/styles/global.css";
 import { headers } from 'next/headers'
 import ContextProvider from "@/components/auth/ContextProvider";
+import "@/utils/fontawesome";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -10,6 +13,8 @@ export const metadata: Metadata = {
 
 const headersObj = await headers();
 const cookies = headersObj.get('cookie')
+
+config.autoAddCss = false;
 
 export default function RootLayout({
   children,
