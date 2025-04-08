@@ -5,6 +5,7 @@ import {
   getChainIdFromMessage,
 } from "@reown/appkit-siwe";
 import { createPublicClient, http } from "viem";
+import pool from "../../config/db.js";
 const projectId = process.env.WALLET_CONNECT_PROJECT_ID;
 
 export const connect = async (req, res, next) => {
@@ -62,6 +63,14 @@ export const verify = async (req, res) => {
     if (isNaN(chainId)) {
       throw new Error("Invalid chainId");
     }
+
+    await pool.query(
+      `INSERT INTO users (wallet_address, chain_id, last_login)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (wallet_address, chain_id)
+       DO UPDATE SET last_login = NOW()`,
+      [address, chainId]
+    );
 
     // save the session with the address and chainId (SIWESession)
     req.session.siwe = { address, chainId };

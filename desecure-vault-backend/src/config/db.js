@@ -1,13 +1,12 @@
-// const mongoose = require('mongoose');
+import pg from 'pg';
+const { Pool } = pg;
 
-// const connectDB = async () => {
-//     try {
-//         await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-//         console.log('MongoDB connected');
-//     } catch (error) {
-//         console.error('DB connection error:', error);
-//         process.exit(1);
-//     }
-// };
+const pool = new Pool({
+  user: process.env.DATABASE_USER,
+  host: process.env.DATABASE_HOST,
+  database: process.env.DATABASE_NAME,
+  password: process.env.DATABASE_PASSWORD,
+  port: process.env.DATABASE_PORT,
+});
 
-// module.exports = connectDB;
+export default pool;
