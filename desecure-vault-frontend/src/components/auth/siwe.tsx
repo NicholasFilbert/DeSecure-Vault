@@ -89,6 +89,10 @@ const onSignIn = (session?: SIWESession) => {
   }
 }
 
+const onSignOut = (session?: SIWESession) => {
+  window.location.replace('/')
+}
+
 /* Create a SIWE configuration object */
 export const siweConfig = createSIWEConfig({
   getMessageParams: async () => ({
@@ -111,5 +115,6 @@ export const siweConfig = createSIWEConfig({
   getSession,
   verifyMessage,
   signOut,
-  onSignIn
+  onSignIn,
+  onSignOut
 });
