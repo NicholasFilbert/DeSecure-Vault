@@ -1,13 +1,38 @@
 import { config, library } from "@fortawesome/fontawesome-svg-core";
 import { 
   faHome, 
-  faSync,        // Refresh
-  faPlus,        // Add
-  faEdit,        // Update
-  faTrash,       // Delete
-  faEye          // View
+  faSync,
+  faPlus,
+  faEdit,
+  faTrash,
+  faEye,
+  faFolder,
+  faSort,
+  faFilter,
+  faEllipsisV,
+  faUpload,
+  faXmark,
+  faDownload,
+  faShare,
+  faPencil,
 } from "@fortawesome/free-solid-svg-icons";
 
 config.autoAddCss = false;
 
-library.add(faHome, faSync, faPlus, faEdit, faTrash, faEye);
+library.add(
+  faHome, 
+  faSync, 
+  faPlus, 
+  faEdit, 
+  faTrash, 
+  faEye, 
+  faFolder, 
+  faSort, 
+  faFilter, 
+  faEllipsisV, 
+  faUpload, 
+  faXmark, 
+  faDownload, 
+  faShare, 
+  faPencil,
+);

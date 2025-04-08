@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 // import { faHome, faSync } from '@fortawesome/free-solid-svg-icons'
 import '@/utils/fontawesome'
-import { faHome, faSync } from '@fortawesome/free-solid-svg-icons'
+import { faFolder, faHome, faSync } from '@fortawesome/free-solid-svg-icons'
 
 const Sidebar = () => {
   const pathName = usePathname();
@@ -30,6 +30,11 @@ const Sidebar = () => {
           <Link href="/app" className={`nav-item ${pathName === '/app' ? "active" : ""}`}>
             <FontAwesomeIcon className='sidebar-icon' icon={faHome} />
             <span>Dashboard</span>
+          </Link>
+
+          <Link href="/app/files" className={`nav-item ${pathName === '/app/files' ? "active" : ""}`}>
+            <FontAwesomeIcon className='sidebar-icon' icon={faFolder} />
+            <span>My Files</span>
           </Link>
         </div>
       </nav>

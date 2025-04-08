@@ -2,25 +2,34 @@ import React from 'react'
 import '@/styles/app/dashboard.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
+import Section from '@/components/common/Section'
+import Header from '@/components/common/Header'
 
 const App = () => {
+  const overviewAction = (
+    <>
+      <button className="btn btn-outline">
+        <FontAwesomeIcon icon={faSync} />
+        <span>Refresh</span>
+      </button>
+      <button className="btn btn-primary">
+        <FontAwesomeIcon icon={faPlus} />
+        <span>Add Item</span>
+      </button>
+    </>
+  );
+
+  const activityAction = (
+    <button className="btn btn-outline">
+      <i className="fas fa-filter"></i>
+      <span>Filter</span>
+    </button>
+  )
+
   return (
     <>
-      <section className="content-section">
-        <div className="section-header">
-          <h2 className="section-title">Vault Overview</h2>
-          <div className="section-actions">
-            <button className="btn btn-outline">
-              <FontAwesomeIcon icon={faSync} />
-              <span>Refresh</span>
-            </button>
-            <button className="btn btn-primary">
-              <FontAwesomeIcon icon={faPlus} />
-              <span>Add Item</span>
-            </button>
-          </div>
-        </div>
-
+      <Header title="Dashboard" />
+      <Section title="Vault Overview" className='mb-8' action={overviewAction}>
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-title">Total Items</div>
@@ -105,19 +114,10 @@ const App = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* <!-- Second Content Section --> */}
-      <section className="content-section">
-        <div className="section-header">
-          <h2 className="section-title">Recent Activity</h2>
-          <div className="section-actions">
-            <button className="btn btn-outline">
-              <i className="fas fa-filter"></i>
-              <span>Filter</span>
-            </button>
-          </div>
-        </div>
+      <Section title="Recent Activity" action={activityAction}>
 
         <div className="activity-list">
           <div className="activity-item">
@@ -172,9 +172,9 @@ const App = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Section>
 
-      <footer className="footer">
+      <footer className="footer mb-6">
         <div>&copy; 2025 Shadow Vault. All rights reserved.</div>
         <div className="footer-links">
           <a href="#" className="footer-link">Privacy Policy</a>

@@ -1,0 +1,75 @@
+'use client'
+
+import { faEllipsisV, IconDefinition } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useState, useRef, useEffect } from 'react'
+
+const MoreOptions = ({
+  id,
+  detailContent
+}: {
+  id: string,
+  detailContent: Array<{
+    label: string,
+    action: (id: string) => void,
+    icon: IconDefinition
+  }>
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const openMore = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button 
+        onClick={openMore} 
+        className="p-1 rounded-full w-8 h-8 cursor-pointer hover:bg-gray-200 transition-colors ml-auto block"
+      >
+        <FontAwesomeIcon icon={faEllipsisV} className="text-gray-500" />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute right-0 mt-1 w-48 bg-dark rounded-md shadow-lg z-10 border border-gray-200">
+          <div className="py-1">
+            {detailContent.map((item, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  item.action(id);
+                  setIsOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-primary/20 cursor-pointer"
+              >
+                {item.icon && (
+                  <FontAwesomeIcon icon={item.icon} className="me-3" />
+                )}
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MoreOptions
