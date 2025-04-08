@@ -1,12 +1,21 @@
 import express from "express";
-import defaultRoutes from "./default.routes.js"; // Ensure the `.js` extension is included
-import siweRoutes from "./auth/siwe.routes.js"; // Ensure the `.js` extension is included
+import defaultRoutes from "./default.routes.js";
+import siweRoutes from "./auth/siwe.routes.js"; 
+import requireSiweAuth from "../middlewares/apiAuth.js";
 
 const router = express.Router();
+const siweRouter = express.Router()
 
-// Define routes
+// Register Auth by SIWE
+siweRouter.use(requireSiweAuth);
+
+// Register Protected Routes
+siweRouter.use('/', defaultRoutes);
+
+// Register Non-Protected Routes
 router.use('/auth', siweRoutes);
-router.use('/', defaultRoutes);
-// router.use('/users', userRoutes);
+
+// Register siweRouter
+router.use('/', siweRouter)
 
 export default router;
