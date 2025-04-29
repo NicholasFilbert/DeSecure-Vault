@@ -2,11 +2,9 @@ import express from "express";
 import cors from "cors";
 import Session from "express-session";
 import routes from "./routes/index.js"; // Ensure file has .js extension
-import errorHandler from "./middlewares/errorHandler.js" ;
+import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
-app.use(express.json());
-
 app.use(
   cors({
     origin: process.env.FRONTEND_URL, // frontend URL
