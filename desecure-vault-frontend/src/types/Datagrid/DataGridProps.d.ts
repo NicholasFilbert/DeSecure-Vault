@@ -3,8 +3,9 @@ interface DataGridColumns {
   label: string;
   sortable?: boolean;
   width?: string;
+  maxWidth?: string;
   hide?: 'mobile' | 'none';
-  icon?: IconDefinition,
+  icon?: IconDefinition;
 }
 
 interface DataGridProps {
@@ -12,9 +13,10 @@ interface DataGridProps {
   data?: any[];
   // onSort?: (column: string) => void;
   // onFilter?: () => void;
-  fetchData?: (page: number) => Promise<any[]>;
+  fetchData?: (...args: any) => Promise<any[]>;
   hasDetail?: boolean;
   detailContent?: any[];
   pageSize?: number;
-  className?: string
+  className?: string;
+  refresh?: boolean;
 }

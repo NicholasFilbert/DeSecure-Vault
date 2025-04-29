@@ -2,23 +2,26 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useState, ReactNode, useRef, ChangeEvent } from 'react'
-import Popup from '../common/Popup';
+import Popup from '../Popup/Popup';
 import { faXmark, faExclamationTriangle, IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import { formatFileSize } from '@/utils/common';
 
 interface UploadPopupButtonProps {
+  buttonComponent?: React.ReactNode;
   icon?: IconDefinition;
   label?: string;
   popupTitle?: string;
   size?: 'small' | 'medium' | 'large';
   position?: 'center' | 'top';
   action?: (...args: any[]) => unknown;
-  onConfirm?: (formData: any) => void;
+  onConfirm?: (formData: any) => boolean | Promise<boolean>;
   confirmText?: string;
   cancelText?: string;
   showCancelButton?: boolean;
 }
 
 const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
+  buttonComponent = null,
   icon,
   label = 'Upload Files',
   popupTitle = 'Upload New Files',
@@ -30,10 +33,10 @@ const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
   cancelText = 'Cancel',
   showCancelButton = true
 }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(true);
   const [files, setFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState<boolean>(false);
-  const [description, setDescription] = useState<string>('');
+  const [category, setCategory] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,7 +54,7 @@ const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
 
   const resetForm = () => {
     setFiles([]);
-    setDescription('');
+    setCategory('');
     setError(null);
   };
 
@@ -83,7 +86,7 @@ const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
     };
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     // Check if no files were uploaded
     if (files.length === 0) {
       setError("Please select at least one file to upload");
@@ -99,15 +102,20 @@ const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
       return;
     }
 
+    let confirm = true
+
     if (onConfirm) {
       const formData = {
         files,
-        description
+        category
       };
-      onConfirm(formData);
+      confirm = await onConfirm(formData);
     }
-    setIsOpen(false);
-    resetForm();
+    
+    if (confirm){
+      setIsOpen(false);
+      resetForm()
+    }
   };
 
   const addFiles = (newFiles: File[]) => {
@@ -177,20 +185,17 @@ const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
     });
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
 
   return (
     <>
+      {/* {buttonComponent ? (
+        buttonComponent
+      ) : (
       <button className="btn btn-primary" onClick={handleOpen}>
         {icon && <FontAwesomeIcon icon={icon} />}
         <span>{label}</span>
       </button>
+      )} */}
 
       <Popup
         isOpen={isOpen}
@@ -202,19 +207,19 @@ const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
         <div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
-              <textarea
+              <label className="block text-sm font-medium mb-1">Category</label>
+              <input
+                type="text"
                 className="w-full bg-[var(--bg-dark)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-light)]"
-                placeholder="Enter description"
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></textarea>
+                placeholder="Enter Category (Optional)"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              />
             </div>
 
             {error && (
-              <div className="bg-red-900/30 border border-red-700 text-red-200 p-3 rounded-md flex items-start gap-2">
-                <FontAwesomeIcon icon={faExclamationTriangle} className="mt-1 text-red-400" />
+              <div className="bg-danger/30 border border-danger text-danger-text p-3 rounded-md flex items-start gap-2">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="mt-1 text-danger-text" />
                 <div>
                   <p className="font-medium">Error</p>
                   <p className="text-sm">{error}</p>
@@ -223,10 +228,10 @@ const FileUploadButton: React.FC<UploadPopupButtonProps> = ({
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-1">Files</label>
+              <label className="block text-sm font-medium mb-1">Files <span className='text-danger'>*</span></label>
               <div
                 className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${dragActive ? 'border-[var(--primary)] bg-[var(--bg-hover)]' : 'border-[var(--border-color)]'
-                  } ${error ? 'border-red-600' : ''}`}
+                  } ${error ? 'border-danger-dark' : ''}`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}

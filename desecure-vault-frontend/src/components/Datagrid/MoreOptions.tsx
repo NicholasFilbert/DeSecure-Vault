@@ -6,14 +6,16 @@ import React, { useState, useRef, useEffect } from 'react'
 
 const MoreOptions = ({
   id,
-  detailContent
+  detailContent,
+  data
 }: {
   id: string,
   detailContent: Array<{
     label: string,
-    action: (id: string) => void,
-    icon: IconDefinition
-  }>
+    action: (id: string, data: any) => void,
+    icon: IconDefinition,
+  }>,
+  data: any
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -54,7 +56,7 @@ const MoreOptions = ({
                 key={index}
                 onClick={(e) => {
                   e.stopPropagation();
-                  item.action(id);
+                  item.action(id, data);
                   setIsOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-primary/20 cursor-pointer"

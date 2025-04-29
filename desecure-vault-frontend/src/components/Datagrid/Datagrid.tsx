@@ -15,7 +15,8 @@ const Datagrid: React.FC<DataGridProps> = ({
   hasDetail = false,
   detailContent = [],
   pageSize = 10,
-  className = ''
+  className = '',
+  refresh = false,
 }) => {
   const [content, setContent] = useState(data)
   const [originalContent, setOriginalContent] = useState(data)
@@ -46,6 +47,26 @@ const Datagrid: React.FC<DataGridProps> = ({
     }
     loadItems()
   }, [page])
+
+  useEffect(() => {
+    // Reset state
+    setContent([]);
+    setOriginalContent([]);
+    setPage(1);
+    setHasMore(true);
+    hasLoadedOnce.current = false;
+
+    // Load data again
+    const loadItems = async () => {
+      const newItems = await fetchData(1);
+      setContent(newItems);
+      setOriginalContent(newItems);
+      if (newItems.length < pageSize) setHasMore(false);
+      hasLoadedOnce.current = true;
+    };
+
+    loadItems();
+  }, [refresh]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -174,14 +195,15 @@ const Datagrid: React.FC<DataGridProps> = ({
               <tr
                 key={row.id}
                 className="h-[50px] border-b border-border cursor-pointer hover:bg-primary-dark/15 transition-colors duration-200"
-                onClick={row.onClick}
+                onClick={row.onclick}
+                onDoubleClick={row.ondblclick}
               >
                 {columns.map((column) => (
                   <td key={row.id + '-' + column.key} className="px-4">
                     <div className="flex items-center">
-                      {column.icon && (
+                      {(column.icon) && (
                         <FontAwesomeIcon
-                          icon={column.icon}
+                          icon={row.icon ?? column.icon}
                           className="mr-3 text-gray-500"
                           size="sm"
                         />
@@ -191,11 +213,11 @@ const Datagrid: React.FC<DataGridProps> = ({
                   </td>
                 ))}
 
-                {hasDetail && (
-                  <td key={row.id + '-' + 'more'} className="px-4 w-[50px]">
-                    <MoreOptions id={row.id} detailContent={detailContent} />
-                  </td>
-                )}
+                <td key={row.id + '-' + 'more'} className="px-4 w-[50px]">
+                  {hasDetail && row.id != '...' && (
+                    <MoreOptions id={row.id} detailContent={detailContent} data={row}/>
+                  )}
+                </td>
               </tr>
             )
 

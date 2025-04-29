@@ -1,8 +1,6 @@
 'use client'
 
-import { IconDefinition } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState, ReactNode } from 'react'
+import React, { useState } from 'react'
 import Popup from './Popup'
 
 const PopupButton: React.FC<PopupButtonProps> = ({
@@ -14,11 +12,14 @@ const PopupButton: React.FC<PopupButtonProps> = ({
   position = 'center',
   action,
   onConfirm,
+  onClose = () => {},
   confirmText = 'Confirm',
+  confirmTextColor = 'primary',
   cancelText = 'Cancel',
-  showCancelButton = true
+  cancelTextColor = 'outline',
+  showCancelButton = true,
 }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [isOpen, setIsOpen] = useState<boolean>(true)
 
   const handleOpen = () => {
     setIsOpen(true)
@@ -29,21 +30,25 @@ const PopupButton: React.FC<PopupButtonProps> = ({
 
   const handleClose = () => {
     setIsOpen(false)
+    onClose();
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    let confirm = true
     if (onConfirm) {
-      onConfirm()
+      confirm = await onConfirm() ?? true
     }
-    setIsOpen(false)
+
+    if(confirm)
+      setIsOpen(false)
   }
 
   return (
     <>
-      <button className="btn btn-primary" onClick={handleOpen}>
+      {/* <button className="btn btn-primary" onClick={handleOpen}>
         {icon && <FontAwesomeIcon icon={icon} />}
         <span>{label}</span>
-      </button>
+      </button> */}
 
       <Popup
         isOpen={isOpen}
@@ -59,11 +64,11 @@ const PopupButton: React.FC<PopupButtonProps> = ({
 
           <div className="flex justify-end gap-2 mt-6">
             {showCancelButton && (
-              <button onClick={handleClose} className="btn btn-outline">
+              <button onClick={handleClose} className={`btn btn-${cancelTextColor}`}>
                 {cancelText}
               </button>
             )}
-            <button onClick={handleConfirm} className="btn btn-primary">
+            <button onClick={handleConfirm} className={`btn btn-${confirmTextColor}`}>
               {confirmText}
             </button>
           </div>

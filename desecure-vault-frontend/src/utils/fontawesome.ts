@@ -15,6 +15,11 @@ import {
   faDownload,
   faShare,
   faPencil,
+  faChevronDown,
+  faFolderPlus,
+  faFileCirclePlus,
+  faExclamationTriangle,
+  faFile,
 } from "@fortawesome/free-solid-svg-icons";
 
 config.autoAddCss = false;
@@ -35,4 +40,9 @@ library.add(
   faDownload, 
   faShare, 
   faPencil,
+  faChevronDown,
+  faFolderPlus,
+  faFileCirclePlus,
+  faExclamationTriangle,
+  faFile
 );

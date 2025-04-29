@@ -80,6 +80,10 @@ const signOut =  async (): Promise<boolean> => {
   }
  
   const data = await res.json();
+  
+  if(window.location.pathname !== '/')
+    window.location.replace('/')
+  
   return data == "{}";
 } 
 
@@ -90,7 +94,7 @@ const onSignIn = (session?: SIWESession) => {
 }
 
 const onSignOut = (session?: SIWESession) => {
-  window.location.replace('/')
+  // window.location.replace('/')
 }
 
 /* Create a SIWE configuration object */
