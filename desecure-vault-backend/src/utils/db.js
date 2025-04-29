@@ -9,4 +9,11 @@ const pool = new Pool({
   port: process.env.DATABASE_PORT,
 });
 
-export default pool;
+export const getQuery = async (query, args) => {
+  const result = await pool.query(query, args);
+  return result.rows
+} 
+
+export const executeQuery = async (query, args) => {
+  await pool.query(query, args);
+} 
