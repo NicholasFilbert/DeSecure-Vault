@@ -1,6 +1,7 @@
 interface DataGridColumns {
   key: string;
   label: string;
+  defaultValue?: string;
   sortable?: boolean;
   width?: string;
   maxWidth?: string;

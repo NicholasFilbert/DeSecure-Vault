@@ -33,14 +33,15 @@ const Files = ({
     { key: 'name', label: 'Name', sortable: true, icon: faFile, width: 'max-w-100' },
     // { key: 'owner', label: 'Owner', sortable: false, hide: 'mobile' },
     // { key: 'modified', label: 'Last modified', sortable: true, hide: 'mobile' },
+    { key: 'category', label: 'Category', defaultValue: '-', sortable: true, hide: 'mobile' },
     { key: 'size', label: 'File Size', sortable: true, hide: 'mobile' }
   ]
 
   const detailContent = [
-    { label: 'Download', icon: faDownload, action: async (id: string) => await downloadFile(id) },
+    { label: 'Download', icon: faDownload, type: 'file', action: async (id: string) => await downloadFile(id) },
     { label: 'Rename', icon: faPencil, action: async (id: string, data: any) => await renameFile(id, data) },
-    { label: 'Share', icon: faShare, action: async (id: string) => await shareFile(id) },
-    { label: 'Delete', icon: faTrash, action: async (id: string) => await deleteFile(id) },
+    { label: 'Share', icon: faShare, type: 'file',action: async (id: string) => await shareFile(id) },
+    { label: 'Delete', icon: faTrash, action: async (id: string, data:any) => await deleteFile(id, data) },
   ]
 
   const downloadFile = async (id: string) => {
@@ -110,10 +111,24 @@ const Files = ({
     setPopup(renamePopup)
   }
 
-  const deleteFile = async (id: string) => {
+  const deleteFile = async (id: string, data:any) => {
     const deleteHandler = async () => {
-      console.log('delete id:', id)
-      setPopup(null)
+      try {
+        const response = await axiosInstance.post('/files/delete', {
+          id: id,
+          path: generatePath(),
+          type: typeConverter(data.type)
+        })
+
+        toast.success(response.data.message)
+        setPopup(null)
+        setRefresh(!refresh)
+        return true
+
+      } catch (e: any) {
+        toast.error(e.response.data.message)
+        return false;
+      }
     }
 
     const deletePopup = (
@@ -267,12 +282,14 @@ const Files = ({
         headers: {
           "Content-Type": "multipart/form-data"
         }
+      }).then(res => {
+        setRefresh(!refresh)
+        toast.success(res.data.message)
       })
-
-      setRefresh(!refresh)
-      toast.success(res.data.message)
       return true;
+
     } catch (e: any) {
+      console.log(e)
       toast.error(e.response.data.message)
       return false;
     }
@@ -307,22 +324,6 @@ const Files = ({
 
   const dropdownItems = [
     {
-      id: 'upload',
-      type: 'component' as const,
-      icon: faFileCirclePlus,
-      label: 'Upload Files',
-      component: (
-        <FileUploadButton
-          icon={faUpload}
-          label="Upload Files"
-          popupTitle="Upload New Files"
-          onConfirm={uploadFile}
-          confirmText="Upload"
-          size='large'
-        />
-      )
-    },
-    {
       id: 'directory',
       type: 'component' as const,
       icon: faFolderPlus,
@@ -339,6 +340,22 @@ const Files = ({
           confirmText='Confirm'
           cancelText='Cancel'
           showCancelButton={true}
+        />
+      )
+    },
+    {
+      id: 'upload',
+      type: 'component' as const,
+      icon: faFileCirclePlus,
+      label: 'Upload Files',
+      component: (
+        <FileUploadButton
+          icon={faUpload}
+          label="Upload Files"
+          popupTitle="Upload New Files"
+          onConfirm={uploadFile}
+          confirmText="Upload"
+          size='large'
         />
       )
     },

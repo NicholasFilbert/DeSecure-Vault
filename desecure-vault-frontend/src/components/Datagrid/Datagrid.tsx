@@ -208,13 +208,13 @@ const Datagrid: React.FC<DataGridProps> = ({
                           size="sm"
                         />
                       )}
-                      <span className="truncate">{row[column.key]}</span>
+                      <span className="truncate">{(!!row[column.key] ? row[column.key] : (!!column.defaultValue && row.type==='file' ? column.defaultValue : ''))}</span>
                     </div>
                   </td>
                 ))}
 
                 <td key={row.id + '-' + 'more'} className="px-4 w-[50px]">
-                  {hasDetail && row.id != '...' && (
+                  {hasDetail && row.id != '...'  && (
                     <MoreOptions id={row.id} detailContent={detailContent} data={row}/>
                   )}
                 </td>
