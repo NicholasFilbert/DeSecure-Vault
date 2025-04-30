@@ -95,13 +95,13 @@ export const getItem = async (req, res, next) => {
 
   try {
     let cmdTxt = `
-      SELECT id, name, user_id, updated_at, 'dir' "type", null "size"
+      SELECT id, name, user_id, '' "category", updated_at, 'dir' "type", null "size"
       FROM directory
       WHERE user_id = $1
       AND parent_directory_id = $2
       -- AND parent_directory_id  IS NOT DISTINCT FROM (SELECT parent_directory_id FROM directory WHERE id=$2)
       union
-      select id, name, user_id, updated_at, 'file' "type", size
+      select id, name, user_id, category, updated_at, 'file' "type", size
       from files
       WHERE user_id = $1
       and directory_id = $2
@@ -181,24 +181,7 @@ export const uploadFile = async (req, res, next) => {
         filenameList = queryResult.map(res => res.name)
     } catch { }
 
-    const getUniqueFilename = (file) => {
-      let filename = file.originalname || 'Untitled File';
-      let exist = true;
-      let counter = 1;
-      const filenameObject = getFileNameAndExtension(filename);
-
-      while (exist) {
-        if (filenameList.includes(filename)) {
-          filename = `${filenameObject.name} (${counter}).${filenameObject.extension}`
-          counter++
-        } else {
-          exist = false
-        }
-      }
-
-      return filename
-    }
-
+    const getUniqueFilename = await getUniqueFilenameHandler(currDir)
 
     // get cid
     cmdTxt = `
@@ -208,25 +191,24 @@ export const uploadFile = async (req, res, next) => {
     `
     param = [user_id]
 
-    const prevCid = (await getQuery(cmdTxt, param))[0]
+    const prevCid = await getPrevCid(user_id)
 
-    const cid = await ipfsAddFile(address, path, files, !!prevCid ? '' : prevCid['directory_ipfs_cid'], getUniqueFilename)
+    const cid = await ipfsAddFile(address, path, files, prevCid, getUniqueFilename)
 
     cmdTxt = 'UPDATE users SET directory_ipfs_cid=$1 WHERE id=$2'
     param = [cid.dirCid, user_id]
     await executeQuery(cmdTxt, param)
 
     // insert file
-
     cmdTxt = `
       INSERT INTO files(user_id, directory_id, name, category, ipfs_cid, size)
       VALUES ($1, $2, $3, $4, $5, $6)
     `
 
-    cid.filesCid.forEach(async file => {
-      param = [user_id, currDir, file.filename, category, file.cid, file.size]
-      await executeQuery(cmdTxt, param)
-    });
+    for (const file of cid.filesCid) {
+      const param = [user_id, currDir, file.filename, category, file.cid, file.size];
+      await executeQuery(cmdTxt, param);
+    }    
 
     return res.status(200).send(successMessage(`File has been added successfully`, cid))
   } catch (error) {
@@ -289,7 +271,7 @@ export const renameFile = async (req, res) => {
     if (type === 'files') {
       const getUniqueFilename = await getUniqueFilenameHandler(currDir);
       const prevCid = await getPrevCid(user_id);
-      const {dirCid} = await ipfsRenameFile(address, path, prevName, newName, prevCid, getUniqueFilename)
+      const { dirCid } = await ipfsRenameFile(address, path, prevName, newName, prevCid, getUniqueFilename)
 
       let cmdTxt = `update users set directory_ipfs_cid=$1 where id=$2`
       let param = [dirCid, user_id]
@@ -316,55 +298,49 @@ export const renameFile = async (req, res) => {
 
 export const deleteFileHandler = async (req, res) => {
   try {
-    // const user_id = req.session.user_id
-    // const address = req.session.siwe.address
-    const user_id = 'fe8cb6dc-72a2-4981-96eb-70060c7929dd'
-    const address = '0x6bBCff274010f00eFF7B839aa023D8b445A7ac7E'
+    const user_id = req.session.user_id
+    const address = req.session.siwe.address
+    // const user_id = 'fe8cb6dc-72a2-4981-96eb-70060c7929dd'
+    // const address = '0x6bBCff274010f00eFF7B839aa023D8b445A7ac7E'
+    const path = req.body.path;
+    const currDir = path.split('/').pop();
     const type = req.body.type;
     const id = req.body.id
+    let filename;
 
-    // Get directory ipfs cid
-    let cmdTxt = `select directory_ipfs_cid from users where id=$1`
-    let param = [user_id]
-    let queryResult = await getQuery(cmdTxt, param)
-    if (!queryResult[0]) {
+    const prevCid = await getPrevCid(user_id)
+    if (!!prevCid) {
       return res.status(500).send(clientErrorMessage("Something is wrong, please contact admin!"))
     }
-    const directory_cid = queryResult[0]['directory_ipfs_cid']
 
-    // get filename
-    cmdTxt = `select name from ${type} where user_id=$1 and id=$2`
-    param = [user_id, id]
-
-    queryResult = await getQuery(cmdTxt, param)
-    if (!queryResult[0]) {
-      return res.status(500).send(clientErrorMessage("Something is wrong, please contact admin!"))
+    if(type === 'files') {
+      let cmdTxt = `
+          select name from files where user_id=$1 and id=$2;
+        `
+      let param = [user_id, id]
+      filename = (await getQuery(cmdTxt, param))[0]['name']
     }
-    const filename = queryResult[0]['name']
-    console.log(directory_cid, filename)
 
-    const newDirectoryCid = await ipfsDeleteFile(address, filename, directory_cid)
-
-
-    cmdTxt = `
+    let cmdTxt = `
       delete from ${type}
       where user_id=$1
       and id=$2;
     `
-    param = [user_id, id]
+    let param = [user_id, id]
     await executeQuery(cmdTxt, param)
 
-    cmdTxt = `
-      update users
-      set directory_ipfs_cid=$1
-      where id=$2;
-    `
-    param = [newDirectoryCid.dirCid, user_id]
-    await executeQuery(cmdTxt, param)
+    if (type === 'files') {
+      const newDirectoryCid = await ipfsDeleteFile(address, path, filename, prevCid)
+      cmdTxt = `
+        update users
+        set directory_ipfs_cid=$1
+        where id=$2;
+      `
+      param = [newDirectoryCid.dirCid, user_id]
+      await executeQuery(cmdTxt, param)
+    }
 
-    return res.status(200).send(newDirectoryCid.dirCid)
-
-
+    return res.send(successMessage("File deleted successfully"))
   } catch (e) {
     console.log(e)
     return res.status(500).json(errorMessage("Internal Server Error: Fail to Delete"));

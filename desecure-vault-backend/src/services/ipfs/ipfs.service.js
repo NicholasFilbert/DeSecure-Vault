@@ -9,7 +9,7 @@ export const ipfsAddFile = async (base = 'Others', path='/', files, prevCid, dup
     files.map(async file => {
       let filename = file.originalname
       if(!!duplicateHandler){
-        filename = duplicateHandler(file)
+        filename = duplicateHandler(filename)
       }
       let fullPath = `${dirPath}/${filename}`
 
@@ -85,17 +85,14 @@ export const ipfsRenameFile = async (base = 'Others', path='/', prevName, newNam
   }
 }
 
-export const ipfsDeleteFile = async (dirName = '', filename, prevCid) => {
-  const filePath = `/${dirName}/${filename}`;
-  console.log(filePath)
-  // return 1;
+export const ipfsDeleteFile = async (base = 'Others', path='/', filename, prevCid) => {
+  const filePath = `/${base}${path}/${filename}`;
+  
   try {
     await client.files.rm(filePath); // remove the file from MFS
 
-
     // flush the directory to get the new CID
-    const dirPath = `/${dirName}`;
-    const newDirCid = await client.files.flush(dirPath);
+    const newDirCid = await client.files.flush('/' + base);
 
     if(!!prevCid){
       await client.pin.rm(prevCid, {recursive: true})
@@ -107,7 +104,7 @@ export const ipfsDeleteFile = async (dirName = '', filename, prevCid) => {
     await client.repo.gc();
 
     return {
-      dirCid: newDirCid.toString()
+      "dirCid": newDirCid.toString()
     };
   } catch (error) {
     console.error('Error deleting file:', error);
