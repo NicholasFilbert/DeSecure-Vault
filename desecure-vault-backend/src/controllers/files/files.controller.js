@@ -62,7 +62,7 @@ export const getPathId = async (req, res, next) => {
 
   try {
     const pathId = await getQuery(cmdTxt, param)
-    if (pathId > 0) {
+    if (pathId.length > 0) {
       parent_directory_id = pathId[0].parent_directory_id
       valid = true
     }
