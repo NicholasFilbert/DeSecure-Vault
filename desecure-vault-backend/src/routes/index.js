@@ -1,5 +1,4 @@
 import express from "express";
-import defaultRoutes from "./default.routes.js";
 import siweRoutes from "./auth/siwe.routes.js"; 
 // import ipfsRoutes from "./ipfs/ipfs.routes.js";
 import fileRoutes from "./files/files.routes.js";
@@ -13,7 +12,6 @@ siweRouter.use(requireSiweAuth);
 
 // Register Protected Routes
 // siweRouter.use('/ipfs', ipfsRoutes);
-siweRouter.use('/', defaultRoutes);
 siweRouter.use('/files', fileRoutes)
 
 // Register Non-Protected Routes
