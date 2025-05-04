@@ -201,12 +201,12 @@ export const uploadFile = async (req, res, next) => {
 
     // insert file
     cmdTxt = `
-      INSERT INTO files(user_id, directory_id, name, category, ipfs_cid, size)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO files(user_id, directory_id, name, category, ipfs_cid, file_hash, size)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
     `
 
     for (const file of cid.filesCid) {
-      const param = [user_id, currDir, file.filename, category, file.cid, file.size];
+      const param = [user_id, currDir, file.filename, category, file.cid, file.hash, file.size];
       await executeQuery(cmdTxt, param);
     }    
 

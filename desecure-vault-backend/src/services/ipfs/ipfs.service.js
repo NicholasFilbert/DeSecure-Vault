@@ -1,4 +1,5 @@
 import { create } from 'kubo-rpc-client';
+import crypto from 'crypto'
 
 const client = create()
 
@@ -23,9 +24,13 @@ export const ipfsAddFile = async (base = 'Others', path='/', files, prevCid, dup
         }
       )
       const fileCid = await client.files.stat(fullPath)
+
+      const hash = crypto.createHash('sha256').update(file.buffer).digest('hex');
+
       return {
         filename: filename,
         size: file.size,
+        hash: hash,
         cid: fileCid.cid.toString() 
       }
     })
