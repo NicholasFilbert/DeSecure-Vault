@@ -32,7 +32,7 @@ const Sidebar = () => {
             <span>Dashboard</span>
           </Link>
 
-          <Link href="/app/files" className={`nav-item ${pathName === '/app/files' ? "active" : ""}`}>
+          <Link href="/app/files" className={`nav-item ${pathName.startsWith('/app/files') ? "active" : ""}`}>
             <FontAwesomeIcon className='sidebar-icon' icon={faFolder} />
             <span>My Files</span>
           </Link>
