@@ -40,8 +40,8 @@ const Files = ({
   const detailContent = [
     { label: 'Download', icon: faDownload, type: 'file', action: async (id: string) => await downloadFile(id) },
     { label: 'Rename', icon: faPencil, action: async (id: string, data: any) => await renameFile(id, data) },
-    { label: 'Share', icon: faShare, type: 'file',action: async (id: string) => await shareFile(id) },
-    { label: 'Delete', icon: faTrash, action: async (id: string, data:any) => await deleteFile(id, data) },
+    // { label: 'Share', icon: faShare, type: 'file',action: async (id: string) => await shareFile(id) },
+    { label: 'Delete', icon: faTrash, action: async (id: string, data: any) => await deleteFile(id, data) },
   ]
 
   const downloadFile = async (id: string) => {
@@ -111,7 +111,7 @@ const Files = ({
     setPopup(renamePopup)
   }
 
-  const deleteFile = async (id: string, data:any) => {
+  const deleteFile = async (id: string, data: any) => {
     const deleteHandler = async () => {
       try {
         const response = await axiosInstance.post('/files/delete', {
@@ -174,9 +174,12 @@ const Files = ({
       });
 
       const dirId = response.data.data;
+      const stack = dirId.parentDir.split("/").filter(Boolean);
+      const last = stack[stack.length - 1] || "";
 
+      setDirStack(stack);
+      setParentDir(last);
       setCurrDir(dirId.currDir);
-      setParentDir(dirId.parentDir);
       return dirId;
     } catch (error) {
       console.error("Failed to initialize data:", error);

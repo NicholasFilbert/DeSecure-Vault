@@ -63,25 +63,39 @@ export const getPathId = async (req, res, next) => {
   try {
     const pathId = await getQuery(cmdTxt, param)
     if (pathId.length > 0) {
-      parent_directory_id = pathId[0].parent_directory_id
       valid = true
     }
   } catch { }
 
   if (!valid) {
-    cmdTxt = `select id, parent_directory_id from directory 
+    cmdTxt = `select id from directory 
               where user_id=$1
               and parent_directory_id is null`
     param = [user_id]
 
     const pathIdResult = await getQuery(cmdTxt, param)
     pathId = pathIdResult[0].id
-    parent_directory_id = pathIdResult[0].parent_directory_id
+  }
+
+  cmdTxt = `select parent_directory_id from directory
+            where user_id=$1 and id=$2`
+
+  let tempId = pathId
+  let parentDir = ''
+  while (true) {
+    param = [user_id, tempId]
+    let parent = await getQuery(cmdTxt, param)
+
+    if(parent.length === 0 || !parent[0].parent_directory_id)
+      break
+
+    tempId = parent[0].parent_directory_id
+    parentDir = `${tempId}/` + parentDir
   }
 
   const result = {
     currDir: pathId,
-    parentDir: parent_directory_id
+    parentDir: parentDir
   }
 
   return res.status(200).send(successMessage('Data fetch successfully', result))
