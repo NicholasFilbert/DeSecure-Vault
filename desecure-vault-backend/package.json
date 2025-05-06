@@ -13,22 +13,20 @@
   "license": "ISC",
   "dependencies": {
     "@reown/appkit-siwe": "^1.7.1",
-    "cookie-parser": "^1.4.7",
+    "circom": "^0.5.46",
+    "circomlibjs": "^0.1.7",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
-    "ethers": "^6.13.5",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "file-saver": "^2.0.5",
-    "file-type": "^20.4.1",
     "jsonwebtoken": "^9.0.2",
-    "jszip": "^3.10.1",
-    "kubo": "^0.34.1",
     "kubo-rpc-client": "^5.1.0",
     "multer": "^1.4.5-lts.2",
     "nodemon": "^3.1.9",
     "pg": "^8.14.1",
     "siwe": "^3.0.0",
+    "snarkjs": "^0.7.5",
     "viem": "^2.24.3"
   }
 }
