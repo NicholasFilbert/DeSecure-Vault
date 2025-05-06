@@ -4,7 +4,7 @@ import Session from "express-session";
 import routes from "./routes/index.js"; // Ensure file has .js extension
 import errorHandler from "./middlewares/errorHandler.js";
 
-const app = express();
+const app = express();  
 app.use(
   cors({
     origin: process.env.FRONTEND_URL, // frontend URL
@@ -15,9 +15,9 @@ app.use(
   Session({
     name: "shadow-vault", 
     secret: process.env.JWT_SECRET,
-    resave: true,
-    saveUninitialized: true,
-    cookie: { secure: false, sameSite: "lax", maxAge: 24 * 60 * 60 * 1000 },
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, httpOnly:true, sameSite: "lax", maxAge: 24 * 60 * 60 * 1000 },
   })
 );
 
