@@ -1,5 +1,5 @@
 import express from "express";
-import { addDirectory, deleteFileHandler, downloadFile, getItem, getPathId, renameFile, shareFile, uploadFile } from "../../controllers/files/files.controller.js";
+import { addDirectory, deleteFileHandler, downloadFile, getItem, getPathId, renameFile, getStats, uploadFile, getMostCategoryList, verifyProof } from "../../controllers/files/files.controller.js";
 import upload from "../../utils/multer.js"
 
 const router = express.Router();
@@ -12,6 +12,10 @@ router.post('/upload-file', upload.array('files', 10), uploadFile)
 router.post('/download', downloadFile)
 router.post('/rename', renameFile)
 router.post('/delete', deleteFileHandler)
-router.post('/share', shareFile)
+
+router.post('/stats', getStats)
+router.post('/most-category-list', getMostCategoryList)
+
+router.post('/verify-proof', verifyProof)
 
 export default router;

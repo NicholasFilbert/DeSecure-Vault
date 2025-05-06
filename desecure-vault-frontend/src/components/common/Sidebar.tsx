@@ -5,9 +5,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import '@/styles/common/sidebar.css'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-// import { faHome, faSync } from '@fortawesome/free-solid-svg-icons'
 import '@/utils/fontawesome'
-import { faFolder, faHome, faSync } from '@fortawesome/free-solid-svg-icons'
+import { faFolder, faHome, faWrench, faSync } from '@fortawesome/free-solid-svg-icons'
 
 const Sidebar = () => {
   const pathName = usePathname();
@@ -35,6 +34,11 @@ const Sidebar = () => {
           <Link href="/app/files" className={`nav-item ${pathName.startsWith('/app/files') ? "active" : ""}`}>
             <FontAwesomeIcon className='sidebar-icon' icon={faFolder} />
             <span>My Files</span>
+          </Link>
+
+          <Link href="/app/utils" className={`nav-item ${pathName.startsWith('/app/utils') ? "active" : ""}`}>
+            <FontAwesomeIcon className='sidebar-icon' icon={faWrench} />
+            <span>Utils</span>
           </Link>
         </div>
       </nav>

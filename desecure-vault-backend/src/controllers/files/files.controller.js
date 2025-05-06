@@ -2,6 +2,10 @@ import { executeQuery, getQuery } from "../../utils/db.js";
 import { clientErrorMessage, errorMessage, successMessage } from "../../utils/message.js";
 import { ipfsAddFile, ipfsDeleteFile, ipfsGetFile, ipfsRenameFile } from "../../services/ipfs/ipfs.service.js"
 import { getFileNameAndExtension } from "../../utils/common.js";
+import * as snarkjs from "snarkjs";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 //private function
 const getUniqueFilenameHandler = async (currDir) => {
@@ -86,7 +90,7 @@ export const getPathId = async (req, res, next) => {
     param = [user_id, tempId]
     let parent = await getQuery(cmdTxt, param)
 
-    if(parent.length === 0 || !parent[0].parent_directory_id)
+    if (parent.length === 0 || !parent[0].parent_directory_id)
       break
 
     tempId = parent[0].parent_directory_id
@@ -222,7 +226,7 @@ export const uploadFile = async (req, res, next) => {
     for (const file of cid.filesCid) {
       const param = [user_id, currDir, file.filename, category, file.cid, file.hash, file.size];
       await executeQuery(cmdTxt, param);
-    }    
+    }
 
     return res.status(200).send(successMessage(`File has been added successfully`, cid))
   } catch (error) {
@@ -327,7 +331,7 @@ export const deleteFileHandler = async (req, res) => {
       return res.status(500).send(clientErrorMessage("Something is wrong, please contact admin!"))
     }
 
-    if(type === 'files') {
+    if (type === 'files') {
       let cmdTxt = `
           select name from files where user_id=$1 and id=$2;
         `
@@ -361,6 +365,133 @@ export const deleteFileHandler = async (req, res) => {
   }
 }
 
-export const shareFile = async (req, res) => {
+export const getStats = async (req, res) => {
+  const user_id = req.session.user_id;
 
+  let cmdTxt = `select count(*) as total from files where user_id=$1`
+  let param = [user_id]
+  const totalFile = (await getQuery(cmdTxt, param))[0].total
+
+  cmdTxt = `select count(*) as total from directory where user_id=$1`
+  const totalDir = (await getQuery(cmdTxt, param))[0].total
+
+  cmdTxt = `select name, size, created_at from files 
+            where user_id=$1
+            order by created_at desc
+            limit 1`
+
+  let fileStat = await getQuery(cmdTxt, param)
+  let latestFileName = '-'
+  let latestFileSize = '-'
+  let latestFileUploadDate = '-'
+  if (fileStat.length > 0) {
+    fileStat = fileStat[0]
+    latestFileName = fileStat.name
+    latestFileSize = fileStat.size
+    latestFileUploadDate = fileStat.created_at
+  }
+
+
+  return res.status(200).send({
+    totalFile: totalFile,
+    totalDir: totalDir,
+    latestFileName: latestFileName,
+    latestFileSize: latestFileSize,
+    latestFileUploadDate: latestFileUploadDate
+  })
+}
+
+export const getMostCategoryList = async (req, res) => {
+  const user_id = req.session.user_id;
+  let cmdTxt = `SELECT name, category, size, created_at FROM files
+                WHERE user_id = $1
+                AND category = (
+                  SELECT category
+                  FROM files
+                  WHERE user_id = $1
+                  GROUP BY category
+                  ORDER BY COUNT(*) DESC
+                  LIMIT 1
+                );`
+
+  let param = [user_id]
+
+  const categoryList = await getQuery(cmdTxt, param)
+  return res.status(200).send(categoryList)
+}
+
+// async function verifyProof() {
+//   const vKey = JSON.parse(fs.readFileSync("verification_key.json"));
+
+//   const proof = JSON.parse(fs.readFileSync("proof.json"));
+//   const publicSignals = JSON.parse(fs.readFileSync("public.json"));
+
+//   const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+
+//   console.log("Verification result:", res); // true or false
+// }
+
+export const verifyProof = async (req, res) => {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const verificationKeyPath = path.join(__dirname, '../../zksnark/circuit/verification_key.json');
+    const publicSignals = req.body.publicSignals;
+    const proof = req.body.proof;
+
+    // Check if required data is present
+    if (!publicSignals || !proof) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing proof or public signals'
+      });
+    }
+
+    const verificationKey = JSON.parse(fs.readFileSync(verificationKeyPath, 'utf-8'));
+    // Get the actual verification result
+    const verificationResult = await snarkjs.groth16.verify(verificationKey, publicSignals, proof);
+
+    if (!verificationResult) {
+      return res.status(400).result(errorMessage("File verification failed!"))
+    }
+
+    const hashBytes = [];
+    const bitArray = publicSignals;
+
+    // Convert bits back to bytes (8 bits per byte)
+    for (let i = 0; i < bitArray.length; i += 8) {
+      let byte = 0;
+      for (let j = 0; j < 8; j++) {
+        byte = (byte << 1) | (bitArray[i + j] & 1);
+      }
+      hashBytes.push(byte);
+    }
+
+    // Convert bytes to a hex string (SHA-256-like format)
+    const hexHash = hashBytes.map(b =>
+      b.toString(16).padStart(2, '0')  // Ensure 2-digit hex
+    ).join('');
+
+    console.log(hexHash)
+
+    const user_id = req.session.user_id
+    let cmdTxt = `select f.name "filename", category, coalesce(nullif(d.name, ''), 'root') "dirname", d.id "path"
+                  from files f
+                  join directory d on f.directory_id  = d.id
+                  where f.user_id=$1
+                  and file_hash=$2`
+    let param = [user_id, hexHash]
+
+    let response = await getQuery(cmdTxt, param)
+  
+    // IMPORTANT: Return a proper JSON response with success/error status
+    return res.status(200).send(response);
+  } catch (error) {
+    console.error("Verification error:", error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error during verification',
+      error: error.message
+    });
+  }
 }

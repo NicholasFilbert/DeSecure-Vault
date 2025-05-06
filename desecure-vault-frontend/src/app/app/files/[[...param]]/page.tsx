@@ -40,13 +40,11 @@ const Files = ({
   const detailContent = [
     { label: 'Download', icon: faDownload, type: 'file', action: async (id: string) => await downloadFile(id) },
     { label: 'Rename', icon: faPencil, action: async (id: string, data: any) => await renameFile(id, data) },
-    // { label: 'Share', icon: faShare, type: 'file',action: async (id: string) => await shareFile(id) },
     { label: 'Delete', icon: faTrash, action: async (id: string, data: any) => await deleteFile(id, data) },
   ]
 
   const downloadFile = async (id: string) => {
     try {
-      console.log('entered')
       const response = await axiosInstance.post('/files/download', {
         id: id
       }, {
@@ -146,10 +144,6 @@ const Files = ({
     )
 
     setPopup(deletePopup)
-  }
-
-  const shareFile = async (id: string) => {
-
   }
 
   const initializeData = async () => {
@@ -427,6 +421,7 @@ const Files = ({
   const actionButton = (
     <>
       <Button
+        className="btn-outline"
         icon={faSync}
         tooltip='Refresh'
         action={() => setRefresh(!refresh)}

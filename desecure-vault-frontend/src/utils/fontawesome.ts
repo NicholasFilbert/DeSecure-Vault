@@ -20,6 +20,9 @@ import {
   faFileCirclePlus,
   faExclamationTriangle,
   faFile,
+  faUpRightFromSquare,
+  faCheck,
+  faWrench,
 } from "@fortawesome/free-solid-svg-icons";
 
 config.autoAddCss = false;
@@ -44,5 +47,8 @@ library.add(
   faFolderPlus,
   faFileCirclePlus,
   faExclamationTriangle,
-  faFile
+  faFile,
+  faUpRightFromSquare,
+  faCheck,
+  faWrench,
 );

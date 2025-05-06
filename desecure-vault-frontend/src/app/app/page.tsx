@@ -1,187 +1,98 @@
 import React from 'react'
 import '@/styles/app/dashboard.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import Section from '@/components/common/Section'
 import Header from '@/components/common/Header'
+import Footer from '@/components/common/Footer'
+import { formatFileSize, formatDate } from '@/utils/common'
+import axiosInstance from '@/utils/axios'
+import { cookies } from 'next/headers'
 
-const App = () => {
-  const overviewAction = (
-    <>
-      <button className="btn btn-outline">
-        <FontAwesomeIcon icon={faSync} />
-        <span>Refresh</span>
-      </button>
-      <button className="btn btn-primary">
-        <FontAwesomeIcon icon={faPlus} />
-        <span>Add Item</span>
-      </button>
-    </>
-  );
+const App = async () => {
+  const cookieHeader = (await cookies()).toString()
+  const stats = (
+    await axiosInstance.post('/files/stats', {}, {
+      headers: {
+        Cookie: cookieHeader,
+      },
+    })
+  ).data
 
-  const activityAction = (
-    <button className="btn btn-outline">
-      <i className="fas fa-filter"></i>
-      <span>Filter</span>
-    </button>
-  )
+  const categoryList = (
+    await axiosInstance.post('/files/most-category-list', {}, {
+      headers: {
+        Cookie: cookieHeader,
+      },
+    })
+  ).data
 
+  const category = categoryList.length === 0 ? 'No Category' : categoryList[0].category || 'No category'
+  const categoryTitle = `Most Used Category List (${category})`
   return (
     <>
       <Header title="Dashboard" />
-      <Section title="Vault Overview" className='mb-8' action={overviewAction}>
+      <Section title="Vault Overview" className='mb-8'>
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="stat-title">Total Items</div>
-            <div className="stat-value">47</div>
+            <div className="stat-title">Total File</div>
+            <div className="stat-value">{stats.totalFile}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-title">Passwords</div>
-            <div className="stat-value">32</div>
+            <div className="stat-title">Total Directory</div>
+            <div className="stat-value">{stats.totalDir}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-title">Payment Cards</div>
-            <div className="stat-value">8</div>
+            <div className="stat-title">Latest File Size</div>
+            <div className="stat-value">{formatFileSize(stats.latestFileSize)}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-title">Identities</div>
-            <div className="stat-value">7</div>
+            <div className="stat-title">Latest File Created Time</div>
+            <div className="stat-value" style={{ fontSize: '1.2rem' }}>{formatDate(stats.latestFileUploadDate)}</div>
           </div>
-        </div>
-
-        <div className="vault-items">
-          <div className="vault-item">
-            <div className="vault-item-header">
-              <div className="vault-item-icon">
-                <i className="fab fa-github"></i>
-              </div>
-              <div className="vault-item-menu">
-                <i className="fas fa-ellipsis-v"></i>
-              </div>
-            </div>
-            <div className="vault-item-title">GitHub</div>
-            <div className="vault-item-details">
-              <i className="fas fa-user"></i>
-              <span>johndoe@example.com</span>
-            </div>
-          </div>
-
-          <div className="vault-item">
-            <div className="vault-item-header">
-              <div className="vault-item-icon">
-                <i className="fab fa-google"></i>
-              </div>
-              <div className="vault-item-menu">
-                <i className="fas fa-ellipsis-v"></i>
-              </div>
-            </div>
-            <div className="vault-item-title">Google</div>
-            <div className="vault-item-details">
-              <i className="fas fa-user"></i>
-              <span>john.doe@gmail.com</span>
-            </div>
-          </div>
-
-          <div className="vault-item">
-            <div className="vault-item-header">
-              <div className="vault-item-icon">
-                <i className="fab fa-dropbox"></i>
-              </div>
-              <div className="vault-item-menu">
-                <i className="fas fa-ellipsis-v"></i>
-              </div>
-            </div>
-            <div className="vault-item-title">Dropbox</div>
-            <div className="vault-item-details">
-              <i className="fas fa-user"></i>
-              <span>johndoe@example.com</span>
-            </div>
-          </div>
-
-          <div className="vault-item">
-            <div className="vault-item-header">
-              <div className="vault-item-icon">
-                <i className="fab fa-slack"></i>
-              </div>
-              <div className="vault-item-menu">
-                <i className="fas fa-ellipsis-v"></i>
-              </div>
-            </div>
-            <div className="vault-item-title">Slack</div>
-            <div className="vault-item-details">
-              <i className="fas fa-user"></i>
-              <span>john@company.com</span>
-            </div>
+          <div className="stat-card" style={{ gridColumn: 'span 2' }}>
+            <div className="stat-title">Latest File Name</div>
+            <div className="stat-value">{stats.latestFileName}</div>
           </div>
         </div>
       </Section>
 
-      {/* <!-- Second Content Section --> */}
-      <Section title="Recent Activity" action={activityAction}>
-
-        <div className="activity-list">
-          <div className="activity-item">
-            <div className="activity-icon">
-              <i className="fas fa-plus"></i>
-            </div>
-            <div className="activity-content">
-              <div className="activity-title">Added new password for Amazon</div>
-              <div className="activity-details">
-                <span>Today at 2:45 PM</span>
-                <span>Web Extension</span>
-              </div>
-            </div>
+      <Section title={categoryTitle} className='mb-8'>
+        <div className="w-full bg-bg-dark text-text-light p-4">
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-border-color">
+              <thead>
+                <tr className="bg-bg-card">
+                  <th className="py-3 px-4 border-b border-border-color text-left">Name</th>
+                  <th className="py-3 px-4 border-b border-border-color text-left">Category</th>
+                  <th className="py-3 px-4 border-b border-border-color text-left">Size</th>
+                  <th className="py-3 px-4 border-b border-border-color text-left">Created At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categoryList.map((category, index) => (
+                  <tr
+                    key={index}
+                    className={index % 2 === 0 ? 'bg-bg-dark' : 'bg-bg-card hover:bg-bg-hover'}
+                  >
+                    <td className="py-2 px-4 border-b border-border-color">{category.name}</td>
+                    <td className="py-2 px-4 border-b border-border-color">
+                      
+                    </td>
+                    <td className="py-2 px-4 border-b border-border-color">{formatFileSize(category.size)}</td>
+                    <td className="py-2 px-4 border-b border-border-color">{formatDate(category.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          <div className="activity-item">
-            <div className="activity-icon">
-              <i className="fas fa-edit"></i>
-            </div>
-            <div className="activity-content">
-              <div className="activity-title">Updated Netflix password</div>
-              <div className="activity-details">
-                <span>Yesterday at 7:30 PM</span>
-                <span>Web App</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="activity-item">
-            <div className="activity-icon">
-              <i className="fas fa-share-alt"></i>
-            </div>
-            <div className="activity-content">
-              <div className="activity-title">Shared Wi-Fi password with family</div>
-              <div className="activity-details">
-                <span>Mar 28, 2025</span>
-                <span>Mobile App</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="activity-item">
-            <div className="activity-icon">
-              <i className="fas fa-sync-alt"></i>
-            </div>
-            <div className="activity-content">
-              <div className="activity-title">Autofilled login for GitHub</div>
-              <div className="activity-details">
-                <span>Mar 27, 2025</span>
-                <span>Web Extension</span>
-              </div>
-            </div>
+          <div className="mt-4 text-text-muted text-sm">
+            Total: {categoryList.length} Files
           </div>
         </div>
       </Section>
-
-      <footer className="footer mb-6">
-        <div>&copy; 2025 Shadow Vault. All rights reserved.</div>
-        <div className="footer-links">
-          <a href="#" className="footer-link">Privacy Policy</a>
-          <a href="#" className="footer-link">Terms of Service</a>
-          <a href="#" className="footer-link">Help</a>
-        </div>
-      </footer>
+      <Footer />
     </>
   )
 }
