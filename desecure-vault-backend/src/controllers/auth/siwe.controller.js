@@ -1,4 +1,4 @@
-import { generateNonce } from "siwe";
+import { generateNonce, SiweMessage } from "siwe";
 import {
   /*verifySignature,*/
   getAddressFromMessage,
@@ -34,21 +34,22 @@ export const verify = async (req, res) => {
     const signature = req.body.signature;
     const address = getAddressFromMessage(message);
     let chainId = getChainIdFromMessage(message);
-    // req.session.siwe = { address, chainId };
-    // req.session.save(() => res.status(200).send(true));
 
     // for the moment, the verifySignature is not working with social logins and emails  with non deployed smart accounts
     // for this reason we recommend using the viem to verify the signature
-    const publicClient = createPublicClient({
-      transport: http(
-        `https://rpc.walletconnect.org/v1/?chainId=${chainId}&projectId=${projectId}`
-      ),
-    });
-    const isValid = await publicClient.verifyMessage({
-      message,
-      address,
-      signature,
-    });
+    // const publicClient = createPublicClient({
+    //   transport: http(
+    //     `https://rpc.walletconnect.org/v1/?chainId=${chainId}&projectId=${projectId}`
+    //   ),
+    // });
+    // const isValid = await publicClient.verifyMessage({
+    //   message,
+    //   address,
+    //   signature,
+    // });
+
+    const siweMessage = new SiweMessage(message)
+    const isValid = await siweMessage.verify({signature}) 
 
 
     if (!isValid) {
