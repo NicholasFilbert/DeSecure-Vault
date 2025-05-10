@@ -92,7 +92,6 @@ export const ipfsRenameFile = async (base = 'Others', path='/', prevName, newNam
   await client.pin.add(dirCid, { recursive: true })
 
   if(!!prevCid){
-    console.log(prevCid)
     await client.pin.rm(prevCid, {recursive: true})
   }
 
