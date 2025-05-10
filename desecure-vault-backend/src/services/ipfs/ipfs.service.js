@@ -25,6 +25,19 @@ export const ipfsAddFile = async (base = 'Others', path='/', files, prevCid, dup
       )
       const fileCid = await client.files.stat(fullPath)
 
+      // will take a long time and can kinda slow
+      for await (const result of client.routing.provide(fileCid.cid)) {
+        console.log('Result event:', result);
+      }
+
+      // alternative to publish to DHT
+      // await fetch(`http://localhost:5001/api/v0/routing/provide?arg=${fileCid.cid.toString()}`, {
+      //    method: 'POST', // Required for this endpoint
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // })
+
       const hash = crypto.createHash('sha256').update(file.buffer).digest('hex');
 
       return {
