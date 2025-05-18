@@ -5,7 +5,47 @@
 - IPFS (Kubo): Distributed file storage for decentralized content addressing and retrieval.
 - zk-SNARKs: Zero-knowledge proofs to verify file integrity and ownership without revealing data.
 - SIWE (Sign-In with Ethereum): Seamless and secure wallet-based authentication.
-   
+
+## DB Structure
+```sql
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    wallet_address TEXT NOT NULL,
+    chain_id INTEGER NOT NULL,
+    directory_ipfs_cid TEXT default null,
+    last_login TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    UNIQUE (wallet_address, chain_id)
+);
+
+CREATE TABLE directory (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT,
+  parent_directory_id UUID REFERENCES directory(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_active boolean default true
+);
+
+
+CREATE TABLE files (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  directory_id UUID REFERENCES directory(id) ON DELETE SET NULL,
+  name TEXT,
+  category TEXT,
+  ipfs_cid TEXT,
+  file_hash TEXT,
+  size BIGINT,
+  shared BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_active BOOLEAN default true
+); 
+```
+  
 ## How to run Zk-Snark
 Install Snarkjs
 ```bash
